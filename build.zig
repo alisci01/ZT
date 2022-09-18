@@ -239,11 +239,11 @@ pub fn addBinaryContent(comptime baseContentPath: []const u8) AddContentErrors!v
     defer gpa.allocator().free(zigBin);
     fs.cwd().makePath(zigBin) catch return error.FolderError;
 
-    var sourceFolder: fs.Dir = fs.cwd().openDir(baseContentPath, .{ .iterate = true }) catch return error.FolderError;
+    var sourceFolder: fs.IterableDir = fs.cwd().openIterableDir(baseContentPath, .{ }) catch return error.FolderError;
     defer sourceFolder.close();
-    var iterator: fs.Dir.Iterator = sourceFolder.iterate();
+    var iterator: fs.IterableDir.Iterator = sourceFolder.iterate();
     while (iterator.next() catch return error.FolderError) |target| {
-        var x: fs.Dir.Entry = target;
+        var x: fs.IterableDir.Entry = target;
         if (x.kind == .Directory) {
             const source: []const u8 = std.fs.path.join(gpa.allocator(), &[_][]const u8{ baseContentPath, x.name }) catch return error.RecursionError;
             const targetFolder: []const u8 = std.fs.path.join(gpa.allocator(), &[_][]const u8{ zigBin, x.name }) catch return error.RecursionError;
@@ -257,12 +257,12 @@ pub fn addBinaryContent(comptime baseContentPath: []const u8) AddContentErrors!v
     }
 }
 fn innerAddContent(allocator: std.mem.Allocator, folder: []const u8, dest: []const u8) AddContentErrors!void {
-    var sourceFolder: fs.Dir = fs.cwd().openDir(folder, .{ .iterate = true }) catch return error.FolderError;
+    var sourceFolder: fs.IterableDir = fs.cwd().openIterableDir(folder, .{ }) catch return error.FolderError;
     defer sourceFolder.close();
 
-    var iterator: fs.Dir.Iterator = sourceFolder.iterate();
+    var iterator: fs.IterableDir.Iterator = sourceFolder.iterate();
     while (iterator.next() catch return error.FolderError) |target| {
-        var x: fs.Dir.Entry = target;
+        var x: fs.IterableDir.Entry = target;
         if (x.kind == .Directory) {
             const source: []const u8 = std.fs.path.join(allocator, &[_][]const u8{ folder, x.name }) catch return error.RecursionError;
             const targetFolder: []const u8 = std.fs.path.join(allocator, &[_][]const u8{ dest, x.name }) catch return error.RecursionError;
